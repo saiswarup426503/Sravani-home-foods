@@ -72,5 +72,11 @@ export const sendOrderConfirmationEmail = async (order: Order): Promise<void> =>
     console.log(emailHtml);
     console.groupEnd();
 
-    alert("Order placed successfully! (Email notification has been simulated in the developer console)");
+    // Simulate SMS to owner's phone
+    console.groupCollapsed(`[SMS Simulation] New Order: ${order.id}`);
+    console.log(`To: 7013434594`);
+    console.log(`Message: New order received! Order ID: ${order.id}, Total: ${order.total}, Customer: ${order.customerDetails.name}`);
+    console.groupEnd();
+
+    alert("Order placed successfully! (Email and SMS notifications have been simulated in the developer console)");
 };
