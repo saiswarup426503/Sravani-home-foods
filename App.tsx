@@ -194,11 +194,23 @@ const App: React.FC = () => {
                         ...itemOrId as Omit<MenuItem, 'id'>,
                         id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     };
-                    setMenu(prev => [newItem, ...prev]);
+                    setMenu(prev => {
+                        const newMenu = [newItem, ...prev];
+                        localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                        return newMenu;
+                    });
                 } else if (action === 'update') {
-                    setMenu(prev => prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m));
+                    setMenu(prev => {
+                        const newMenu = prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m);
+                        localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                        return newMenu;
+                    });
                 } else if (action === 'delete') {
-                    setMenu(prev => prev.filter(m => m.id !== itemOrId));
+                    setMenu(prev => {
+                        const newMenu = prev.filter(m => m.id !== itemOrId);
+                        localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                        return newMenu;
+                    });
                 }
             }
         } catch (error) {
@@ -209,11 +221,23 @@ const App: React.FC = () => {
                     ...itemOrId as Omit<MenuItem, 'id'>,
                     id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 };
-                setMenu(prev => [newItem, ...prev]);
+                setMenu(prev => {
+                    const newMenu = [newItem, ...prev];
+                    localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                    return newMenu;
+                });
             } else if (action === 'update') {
-                setMenu(prev => prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m));
+                setMenu(prev => {
+                    const newMenu = prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m);
+                    localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                    return newMenu;
+                });
             } else if (action === 'delete') {
-                setMenu(prev => prev.filter(m => m.id !== itemOrId));
+                setMenu(prev => {
+                    const newMenu = prev.filter(m => m.id !== itemOrId);
+                    localStorage.setItem('restaurantMenu', JSON.stringify(newMenu));
+                    return newMenu;
+                });
             }
         }
     }, [fetchMenu]);
