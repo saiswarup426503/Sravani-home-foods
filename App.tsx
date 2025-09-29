@@ -24,16 +24,6 @@ const initialSettings: RestaurantSettings = {
     upiId: "pamminasaiswarup-1@oksbi",
 };
 
-const loadMenuFromStorage = (): MenuItem[] => {
-    try {
-        const saved = localStorage.getItem('restaurantMenu');
-        return saved ? JSON.parse(saved) : initialMenu;
-    } catch (error) {
-        console.error('Failed to load menu from localStorage:', error);
-        return initialMenu;
-    }
-};
-
 
 type View = 'customer' | 'manager' | 'orders' | 'settings';
 
@@ -52,7 +42,8 @@ const getInitialTheme = (): string => {
 
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('customer');
-    const [menu, setMenu] = useState<MenuItem[]>(loadMenuFromStorage());
+    const [menu, setMenu] = useState<MenuItem[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [settings, setSettings] = useState<RestaurantSettings>(initialSettings);
     const [isPaymentSelectionOpen, setIsPaymentSelectionOpen] = useState<boolean>(false);
     const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -60,13 +51,14 @@ const App: React.FC = () => {
     const [isUserSwitcherOpen, setIsUserSwitcherOpen] = useState<boolean>(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState<boolean>(false);
-    const [orders, setOrders] = useState<Order[]>(mockOrders);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [pendingOrder, setPendingOrder] = useState<Omit<Order, 'id' | 'date' | 'status'> | null>(null);
     const [postLoginAction, setPostLoginAction] = useState<(() => void) | null>(null);
     const [theme, setTheme] = useState(getInitialTheme);
+    const [isMenuLoading, setIsMenuLoading] = useState(true);
+    const [isOrdersLoading, setIsOrdersLoading] = useState(true);
 
     useLayoutEffect(() => {
         const root = window.document.documentElement;
@@ -83,13 +75,153 @@ const App: React.FC = () => {
         }
     }, [theme]);
 
-    useEffect(() => {
+    const fetchMenu = useCallback(async () => {
         try {
-            localStorage.setItem('restaurantMenu', JSON.stringify(menu));
+            setIsMenuLoading(true);
+            const response = await fetch('/api/menu');
+            if (response.ok) {
+                const data = await response.json();
+                setMenu(data);
+                // Save to localStorage as fallback
+                localStorage.setItem('restaurantMenu', JSON.stringify(data));
+            } else {
+                // Fallback to localStorage
+                const saved = localStorage.getItem('restaurantMenu');
+                if (saved) {
+                    setMenu(JSON.parse(saved));
+                } else {
+                    setMenu(initialMenu);
+                }
+            }
         } catch (error) {
-            console.error('Failed to save menu to localStorage:', error);
+            console.error('Failed to fetch menu:', error);
+            // Fallback to localStorage
+            const saved = localStorage.getItem('restaurantMenu');
+            if (saved) {
+                setMenu(JSON.parse(saved));
+            } else {
+                setMenu(initialMenu);
+            }
+        } finally {
+            setIsMenuLoading(false);
         }
-    }, [menu]);
+    }, []);
+
+    const fetchOrders = useCallback(async () => {
+        try {
+            setIsOrdersLoading(true);
+            const response = await fetch('/api/orders');
+            if (response.ok) {
+                const data = await response.json();
+                setOrders(data);
+                // Save to localStorage as fallback
+                localStorage.setItem('restaurantOrders', JSON.stringify(data));
+            } else {
+                // Fallback to localStorage
+                const saved = localStorage.getItem('restaurantOrders');
+                if (saved) {
+                    setOrders(JSON.parse(saved));
+                } else {
+                    setOrders(mockOrders);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
+            // Fallback to localStorage
+            const saved = localStorage.getItem('restaurantOrders');
+            if (saved) {
+                setOrders(JSON.parse(saved));
+            } else {
+                setOrders(mockOrders);
+            }
+        } finally {
+            setIsOrdersLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchMenu();
+        fetchOrders();
+    }, [fetchMenu, fetchOrders]);
+
+    const updateMenu = useCallback(async (action: 'add' | 'update' | 'delete', itemOrId: MenuItem | string) => {
+        try {
+            const body = {
+                action,
+                ...(action === 'add' ? { item: itemOrId } : {}),
+                ...(action === 'update' ? { item: itemOrId } : {}),
+                ...(action === 'delete' ? { itemId: itemOrId } : {}),
+            };
+            const response = await fetch('/api/menu', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (response.ok) {
+                await fetchMenu();
+            } else {
+                // Fallback local update
+                if (action === 'add') {
+                    const newItem: MenuItem = {
+                        ...itemOrId as Omit<MenuItem, 'id'>,
+                        id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    };
+                    setMenu(prev => [newItem, ...prev]);
+                } else if (action === 'update') {
+                    setMenu(prev => prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m));
+                } else if (action === 'delete') {
+                    setMenu(prev => prev.filter(m => m.id !== itemOrId));
+                }
+            }
+        } catch (error) {
+            console.error('Failed to update menu:', error);
+            // Fallback local update (same as above)
+            if (action === 'add') {
+                const newItem: MenuItem = {
+                    ...itemOrId as Omit<MenuItem, 'id'>,
+                    id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                };
+                setMenu(prev => [newItem, ...prev]);
+            } else if (action === 'update') {
+                setMenu(prev => prev.map(m => m.id === (itemOrId as MenuItem).id ? itemOrId as MenuItem : m));
+            } else if (action === 'delete') {
+                setMenu(prev => prev.filter(m => m.id !== itemOrId));
+            }
+        }
+    }, [fetchMenu]);
+
+    const updateOrders = useCallback(async (action: 'add' | 'updateStatus', orderOrId: Order | string, status?: OrderStatus) => {
+        try {
+            const body = {
+                action,
+                ...(action === 'add' ? { order: orderOrId } : {}),
+                ...(action === 'updateStatus' ? { orderId: orderOrId, status } : {}),
+            };
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            if (response.ok) {
+                await fetchOrders();
+            } else {
+                // Fallback local update
+                if (action === 'add') {
+                    setOrders(prev => [orderOrId as Order, ...prev]);
+                } else if (action === 'updateStatus') {
+                    setOrders(prev => prev.map(o => o.id === orderOrId ? { ...o, status } : o));
+                }
+            }
+        } catch (error) {
+            console.error('Failed to update orders:', error);
+            // Fallback local update (same as above)
+            if (action === 'add') {
+                setOrders(prev => [orderOrId as Order, ...prev]);
+            } else if (action === 'updateStatus') {
+                setOrders(prev => prev.map(o => o.id === orderOrId ? { ...o, status } : o));
+            }
+        }
+    }, [fetchOrders]);
 
     const handleToggleTheme = () => {
         setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
@@ -101,27 +233,19 @@ const App: React.FC = () => {
     };
 
     const handleAddItem = (item: Omit<MenuItem, 'id'>) => {
-        const newItem: MenuItem = {
-            ...item,
-            id: `item-${Date.now()}-${Math.random()}`,
-        };
-        setMenu(prevMenu => [newItem, ...prevMenu]);
+        updateMenu('add', item);
     };
 
     const handleUpdateItem = (updatedItem: MenuItem) => {
-        setMenu(prevMenu => prevMenu.map(item => item.id === updatedItem.id ? updatedItem : item));
+        updateMenu('update', updatedItem);
     };
 
     const handleDeleteItem = (itemId: string) => {
-        setMenu(prevMenu => prevMenu.filter(item => item.id !== itemId));
+        updateMenu('delete', itemId);
     };
 
     const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
-        setOrders(prevOrders =>
-            prevOrders.map(order =>
-                order.id === orderId ? { ...order, status } : order
-            )
-        );
+        updateOrders('updateStatus', orderId, status);
     };
 
     const handleAddToCart = (itemToAdd: MenuItem) => {
@@ -201,7 +325,7 @@ const App: React.FC = () => {
                 status: 'Pending',
             };
 
-            setOrders(prevOrders => [newOrder, ...prevOrders]);
+            updateOrders('add', newOrder);
             setCart([]);
 
             try {
@@ -297,23 +421,23 @@ const App: React.FC = () => {
         switch (currentView) {
             case 'customer':
                 return <CustomerMenu
-                    menu={menu}
+                    menu={isMenuLoading ? null : menu}
                     onAddToCart={handleAddToCart}
                     settings={settings}
                 />;
             case 'manager':
                 return <ManageMenu
-                    menu={menu}
+                    menu={isMenuLoading ? null : menu}
                     onAddItem={handleAddItem}
                     onUpdateItem={handleUpdateItem}
                     onDeleteItem={handleDeleteItem}
                 />;
             case 'orders':
-                return <OrderManagement orders={orders} onUpdateStatus={handleUpdateOrderStatus} />;
+                return <OrderManagement orders={isOrdersLoading ? [] : orders} onUpdateStatus={handleUpdateOrderStatus} />;
             case 'settings':
                 return <Settings settings={settings} onSave={handleUpdateSettings} />;
             default:
-                return <CustomerMenu menu={menu} onAddToCart={handleAddToCart} settings={settings} />;
+                return <CustomerMenu menu={isMenuLoading ? null : menu} onAddToCart={handleAddToCart} settings={settings} />;
         }
     };
 

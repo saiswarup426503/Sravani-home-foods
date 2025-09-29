@@ -1,12 +1,19 @@
-# TODO: Implement Menu Persistence for Customer Visibility
+# TODO: Implement Cross-Device Sync for Menu and Orders Using Vercel API
 
 ## Tasks
-- [x] Add localStorage loading for menu on App mount
-- [x] Add useEffect to save menu to localStorage on changes
-- [x] Test menu updates persist across page refreshes
-- [x] Verify customers see updated menu immediately in same session
+- [x] Install @vercel/kv dependency
+- [x] Create vercel.json for deployment config
+- [x] Create api/menu.js serverless function for menu CRUD
+- [x] Create api/orders.js serverless function for orders CRUD
+- [x] Update App.tsx: Integrate API fetch/save for menu and orders, with localStorage fallback
+- [x] Add loading states if needed for components
+- [x] Local test: Verify in-session sync with fallback
+- [ ] Deploy to Vercel: Set up KV store, test cross-device (laptop update, mobile view)
+- [ ] Verify orders sync: Place order on mobile, view in manager on laptop
 
 ## Notes
-- Changes isolated to App.tsx
-- Fallback to initialMenu if localStorage fails
-- No new dependencies needed
+- Uses Vercel KV for shared storage (menu key: 'restaurantMenu', orders key: 'restaurantOrders')
+- Fallback to localStorage for local dev (API fails without deployment)
+- No polling; refetch on mount and after updates
+- Initial data from mockMenu.ts and mockOrders.ts as KV defaults
+- After local changes, user needs to run `npm i -g vercel` and `vercel` for deployment
