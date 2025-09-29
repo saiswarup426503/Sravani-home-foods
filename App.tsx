@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useLayoutEffect } from 'react';
+import React, { useState, useCallback, useMemo, useLayoutEffect, useEffect } from 'react';
 import type { MenuItem, Order, OrderStatus, CartItem, CustomerDetails, User, RestaurantSettings } from './types';
 import Sidebar from './components/Sidebar';
 import OrderManagement from './components/OrderManagement';
@@ -24,6 +24,16 @@ const initialSettings: RestaurantSettings = {
     upiId: "pamminasaiswarup-1@oksbi",
 };
 
+const loadMenuFromStorage = (): MenuItem[] => {
+    try {
+        const saved = localStorage.getItem('restaurantMenu');
+        return saved ? JSON.parse(saved) : initialMenu;
+    } catch (error) {
+        console.error('Failed to load menu from localStorage:', error);
+        return initialMenu;
+    }
+};
+
 
 type View = 'customer' | 'manager' | 'orders' | 'settings';
 
@@ -42,7 +52,7 @@ const getInitialTheme = (): string => {
 
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('customer');
-    const [menu, setMenu] = useState<MenuItem[]>(initialMenu);
+    const [menu, setMenu] = useState<MenuItem[]>(loadMenuFromStorage());
     const [settings, setSettings] = useState<RestaurantSettings>(initialSettings);
     const [isPaymentSelectionOpen, setIsPaymentSelectionOpen] = useState<boolean>(false);
     const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
@@ -72,6 +82,14 @@ const App: React.FC = () => {
             console.error("Could not access localStorage to set theme.", error);
         }
     }, [theme]);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('restaurantMenu', JSON.stringify(menu));
+        } catch (error) {
+            console.error('Failed to save menu to localStorage:', error);
+        }
+    }, [menu]);
 
     const handleToggleTheme = () => {
         setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
