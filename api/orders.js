@@ -1,88 +1,45 @@
-const { get, set } = require('@vercel/edge-config');
+import { createClient } from '@supabase/supabase-js';
 
-const initialOrders = [
-    {
-        id: '#68d9382d',
-        date: 'Sep 28, 2025 at 1:29 PM',
-        customerDetails: {
-            name: 'sai',
-            phone: '7013434594',
-            email: 'pamm@gmail.com',
-            type: 'Takeaway',
-        },
-        items: [
-            { name: 'Dal rice', quantity: 1, price: '₹70' },
-        ],
-        total: '₹70',
-        specialInstructions: 'afa',
-        status: 'Delivered',
-    },
-    {
-        id: '#a1b4c5d6',
-        date: 'Sep 28, 2025 at 11:05 AM',
-        customerDetails: {
-            name: 'Jane Doe',
-            phone: '9876543210',
-            email: 'jane.d@example.com',
-            type: 'Delivery',
-        },
-        items: [
-            { name: 'Chicken Biryani', quantity: 2, price: '₹320' },
-            { name: 'Garlic Naan', quantity: 4, price: '₹40' },
-        ],
-        total: '₹800',
-        specialInstructions: 'Please make it extra spicy.',
-        status: 'Preparing',
-    },
-    {
-        id: '#f7e8d9c1',
-        date: 'Sep 27, 2025 at 8:15 PM',
-        customerDetails: {
-            name: 'Peter Jones',
-            phone: '5551234567',
-            email: 'p.jones@example.com',
-            type: 'Takeaway',
-        },
-        items: [
-            { name: 'Paneer Tikka', quantity: 1, price: '₹220' },
-            { name: 'Mango Lassi', quantity: 2, price: '₹120' },
-        ],
-        total: '₹460',
-        specialInstructions: '',
-        status: 'Pending',
-    },
-];
+const supabaseUrl = process.env.SUPABASE_URL || 'https://agozysbwkbnmsejwcomp.supabase.co';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnb3p5c2J3a2JubXNlandjb21wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTE0NTEyMCwiZXhwIjoyMDc0NzIxMTIwfQ.ttk1GxjfxSepmQbEOY19HObFHD8sA5OrWBRC5RM_In4';
 
-module.exports = async (req, res) => {
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+export default async (req, res) => {
     try {
         const { method } = req;
 
         if (method === 'GET') {
-            let orders = await get('restaurantOrders');
-            if (!orders) {
-                orders = initialOrders;
-                await set('restaurantOrders', orders);
-            }
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('date', { ascending: false });
+
+            if (error) throw error;
             res.status(200).json(orders);
         } else if (method === 'POST') {
             const { action, order, orderId, status } = req.body;
 
-            let orders = await get('restaurantOrders');
-            if (!orders) {
-                orders = initialOrders;
-            }
-
             if (action === 'add') {
-                orders.unshift(order);
-            } else if (action === 'updateStatus') {
-                const index = orders.findIndex(o => o.id === orderId);
-                if (index !== -1) {
-                    orders[index].status = status;
-                }
-            }
+                const { data, error } = await supabase
+                    .from('orders')
+                    .insert([order])
+                    .select();
 
-            await set('restaurantOrders', orders);
-            res.status(200).json(orders);
+                if (error) throw error;
+                res.status(200).json(data);
+            } else if (action === 'updateStatus') {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .update({ status })
+                    .eq('id', orderId)
+                    .select();
+
+                if (error) throw error;
+                res.status(200).json(data);
+            } else {
+                res.status(400).json({ error: 'Invalid action' });
+            }
         } else {
             res.status(405).json({ error: 'Method not allowed' });
         }

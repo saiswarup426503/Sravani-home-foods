@@ -69,19 +69,19 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
                     <div>
                         <h3 className="font-semibold text-stone-700 dark:text-stone-300 mb-3">Order Items</h3>
                         <div className="space-y-1 text-stone-600 dark:text-stone-300">
-                           {order.items.map((item, index) => (
-                               <div key={index} className="flex justify-between">
-                                   <span>{item.name} x {item.quantity}</span>
-                                   <span className="font-medium text-stone-700 dark:text-stone-200">{item.price}</span>
-                               </div>
-                           ))}
+                            {order.items.map((item, index) => (
+                                <div key={index} className="flex justify-between">
+                                    <span>{item.name} x {item.quantity}</span>
+                                    <span className="font-medium text-stone-700 dark:text-stone-200">{item.price}</span>
+                                </div>
+                            ))}
                         </div>
                         <div className="border-t border-dashed border-stone-300 dark:border-stone-600 my-2"></div>
-                         <div className="flex justify-between font-bold text-stone-800 dark:text-stone-200">
+                        <div className="flex justify-between font-bold text-stone-800 dark:text-stone-200">
                             <span>Total:</span>
                             <span>{order.total}</span>
                         </div>
-                        
+
                         {order.specialInstructions && (
                             <div className="mt-4">
                                 <h3 className="font-semibold text-stone-700 dark:text-stone-300">Special Instructions:</h3>

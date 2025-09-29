@@ -1,71 +1,54 @@
-const { get, set } = require('@vercel/edge-config');
+import { createClient } from '@supabase/supabase-js';
 
-const initialMenu = [
-    {
-        id: '1',
-        name: 'Dal Rice',
-        description: 'abc',
-        price: '₹70',
-        category: 'Main Course',
-        isVeg: true,
-        isAvailable: true,
-        isSpicy: false,
-    },
-    {
-        id: '2',
-        name: 'Chicken Biryani',
-        description: 'Fragrant basmati rice with tender chicken and traditional spices',
-        price: '₹320',
-        category: 'Rice & Noodles',
-        isVeg: false,
-        isAvailable: true,
-        isSpicy: true,
-    },
-    {
-        id: '3',
-        name: 'Masala Chai',
-        description: 'Traditional spiced tea with milk',
-        price: '₹25',
-        category: 'Beverages',
-        isVeg: true,
-        isAvailable: true,
-        isSpicy: false,
-    },
-];
+const supabaseUrl = process.env.SUPABASE_URL || 'https://agozysbwkbnmsejwcomp.supabase.co';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnb3p5c2J3a2JubXNlandjb21wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTE0NTEyMCwiZXhwIjoyMDc0NzIxMTIwfQ.ttk1GxjfxSepmQbEOY19HObFHD8sA5OrWBRC5RM_In4';
 
-module.exports = async (req, res) => {
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+export default async (req, res) => {
     try {
         const { method } = req;
 
         if (method === 'GET') {
-            let menu = await get('restaurantMenu');
-            if (!menu) {
-                menu = initialMenu;
-                await set('restaurantMenu', menu);
-            }
+            const { data: menu, error } = await supabase
+                .from('menu')
+                .select('*')
+                .order('id');
+
+            if (error) throw error;
             res.status(200).json(menu);
         } else if (method === 'POST') {
             const { action, item, itemId } = req.body;
 
-            let menu = await get('restaurantMenu');
-            if (!menu) {
-                menu = initialMenu;
-            }
-
             if (action === 'add') {
                 const newItem = { ...item, id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` };
-                menu.unshift(newItem);
-            } else if (action === 'update') {
-                const index = menu.findIndex(m => m.id === item.id);
-                if (index !== -1) {
-                    menu[index] = item;
-                }
-            } else if (action === 'delete') {
-                menu = menu.filter(m => m.id !== itemId);
-            }
+                const { data, error } = await supabase
+                    .from('menu')
+                    .insert([newItem])
+                    .select();
 
-            await set('restaurantMenu', menu);
-            res.status(200).json(menu);
+                if (error) throw error;
+                res.status(200).json(data);
+            } else if (action === 'update') {
+                const { data, error } = await supabase
+                    .from('menu')
+                    .update(item)
+                    .eq('id', item.id)
+                    .select();
+
+                if (error) throw error;
+                res.status(200).json(data);
+            } else if (action === 'delete') {
+                const { error } = await supabase
+                    .from('menu')
+                    .delete()
+                    .eq('id', itemId);
+
+                if (error) throw error;
+                res.status(200).json({ message: 'Item deleted' });
+            } else {
+                res.status(400).json({ error: 'Invalid action' });
+            }
         } else {
             res.status(405).json({ error: 'Method not allowed' });
         }

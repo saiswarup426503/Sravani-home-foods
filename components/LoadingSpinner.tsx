@@ -5,7 +5,7 @@ const LoadingSpinner: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center p-10">
             <div className="w-16 h-16 border-4 border-amber-600 border-dashed rounded-full animate-spin"></div>
-            <p className="mt-4 text-stone-600 font-medium">Our AI chef is cooking up today's menu...</p>
+            <p className="mt-4 text-stone-600 font-medium">Our  chef is cooking up today's menu...</p>
         </div>
     );
 };

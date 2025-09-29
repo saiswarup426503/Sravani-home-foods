@@ -2,9 +2,7 @@ import React, { useState, useCallback, useMemo, useLayoutEffect, useEffect } fro
 import type { MenuItem, Order, OrderStatus, CartItem, CustomerDetails, User, RestaurantSettings } from './types';
 import Sidebar from './components/Sidebar';
 import OrderManagement from './components/OrderManagement';
-import { mockOrders } from './data/mockOrders';
-import { initialMenu } from './data/mockMenu';
-import { mockUsers, guestUser } from './data/mockUsers';
+import { supabase } from './lib/supabase';
 import ManageMenu from './components/ManageMenu';
 import CustomerMenu from './components/CustomerMenu';
 import CartModal from './components/CartModal';
@@ -23,6 +21,16 @@ const initialSettings: RestaurantSettings = {
     openingHours: "06:00 AM - 10:00 AM",
     upiId: "pamminasaiswarup-1@oksbi",
 };
+
+const mockUsers: User[] = [
+    { id: 'user-1', name: 'Sai Swarup', email: 'pamminasaiswarup@gmail.com', role: 'Owner' },
+    { id: 'user-2', name: 'Customer 1', email: 'customer1@example.com', role: 'Customer' },
+];
+
+const guestUser: User = { id: 'guest', name: 'Guest', email: '', role: 'Guest' };
+
+const initialMenu: MenuItem[] = [];
+const mockOrders: Order[] = [];
 
 
 type View = 'customer' | 'manager' | 'orders' | 'settings';
@@ -142,6 +150,26 @@ const App: React.FC = () => {
     useEffect(() => {
         fetchMenu();
         fetchOrders();
+
+        // Realtime subscriptions
+        const menuSubscription = supabase
+            .channel('menu_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'menu' }, () => {
+                fetchMenu();
+            })
+            .subscribe();
+
+        const ordersSubscription = supabase
+            .channel('orders_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                fetchOrders();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(menuSubscription);
+            supabase.removeChannel(ordersSubscription);
+        };
     }, [fetchMenu, fetchOrders]);
 
     const updateMenu = useCallback(async (action: 'add' | 'update' | 'delete', itemOrId: MenuItem | string) => {

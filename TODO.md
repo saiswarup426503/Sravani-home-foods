@@ -1,19 +1,22 @@
-# TODO: Implement Cross-Device Sync for Menu and Orders Using Vercel API
+# TODO: Integrate Supabase for Realtime Database Sync
 
-## Tasks
-- [x] Install @vercel/kv dependency
-- [x] Create vercel.json for deployment config
-- [x] Create api/menu.js serverless function for menu CRUD
-- [x] Create api/orders.js serverless function for orders CRUD
-- [x] Update App.tsx: Integrate API fetch/save for menu and orders, with localStorage fallback
-- [x] Add loading states if needed for components
-- [x] Local test: Verify in-session sync with fallback
-- [ ] Deploy to Vercel: Set up KV store, test cross-device (laptop update, mobile view)
-- [ ] Verify orders sync: Place order on mobile, view in manager on laptop
+## Completed
+- [x] Install @supabase/supabase-js
+- [x] Create lib/supabase.js with client config
+- [x] Update api/menu.js to use Supabase for CRUD operations
+- [x] Update api/orders.js to use Supabase for CRUD operations
+- [x] Update App.tsx to import supabase and add realtime subscriptions
+- [x] Remove mock data imports and define inline fallbacks
+- [x] Delete unused mock data files (data/mockMenu.ts, data/mockOrders.ts, data/mockUsers.ts)
+
+## Remaining
+- [ ] Populate Supabase tables with initial menu and orders data
+- [ ] Test API endpoints (GET/POST for menu and orders)
+- [ ] Run dev server and verify realtime sync across devices/tabs
+- [ ] Deploy to Vercel with env vars (SUPABASE_URL, SUPABASE_ANON_KEY)
+- [ ] Confirm no lag in changes visibility
 
 ## Notes
-- Uses Vercel KV for shared storage (menu key: 'restaurantMenu', orders key: 'restaurantOrders')
-- Fallback to localStorage for local dev (API fails without deployment)
-- No polling; refetch on mount and after updates
-- Initial data from mockMenu.ts and mockOrders.ts as KV defaults
-- After local changes, user needs to run `npm i -g vercel` and `vercel` for deployment
+- Ensure Supabase tables 'menu' and 'orders' exist with correct columns.
+- Realtime subscriptions trigger refetch on any change, ensuring live updates.
+- Fallback to empty arrays if API fails.
