@@ -5,6 +5,23 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+const transformOrder = (order) => {
+    return {
+        id: order.id,
+        date: new Date(order.orderDate).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
+        customerDetails: {
+            name: order.fullName,
+            phone: order.phoneNumber,
+            email: order.emailAddress,
+            type: order.orderType,
+        },
+        items: order.items,
+        total: order.totalAmount,
+        specialInstructions: order.specialInstructions || '',
+        status: order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase(),
+    };
+};
+
 export default async (req, res) => {
     try {
         const { method } = req;
@@ -16,7 +33,10 @@ export default async (req, res) => {
                 .order('orderDate', { ascending: false });
 
             if (error) throw error;
-            res.status(200).json(orders);
+
+            const transformedOrders = orders.map(transformOrder);
+
+            res.status(200).json(transformedOrders);
         } else if (method === 'POST') {
             const { action, order, orderId, status } = req.body;
 
@@ -24,15 +44,15 @@ export default async (req, res) => {
                 // Map order object to match new table schema
                 const orderData = {
                     id: order.id,
-                    fullName: order.fullName,
-                    phoneNumber: order.phoneNumber,
-                    emailAddress: order.emailAddress,
-                    orderType: order.orderType,
+                    fullName: order.customerDetails.name,
+                    phoneNumber: order.customerDetails.phone,
+                    emailAddress: order.customerDetails.email,
+                    orderType: order.customerDetails.type,
                     specialInstructions: order.specialInstructions,
                     items: order.items, // should be JSON array
-                    totalAmount: order.totalAmount,
-                    orderDate: order.orderDate || new Date().toISOString(),
-                    status: order.status || 'pending',
+                    totalAmount: order.total,
+                    orderDate: order.date || new Date().toISOString(),
+                    status: order.status.toLowerCase() || 'pending',
                 };
 
                 const { data, error } = await supabase
@@ -45,7 +65,7 @@ export default async (req, res) => {
             } else if (action === 'updateStatus') {
                 const { data, error } = await supabase
                     .from('orders')
-                    .update({ status })
+                    .update({ status: status.toLowerCase() })
                     .eq('id', orderId)
                     .select();
 
