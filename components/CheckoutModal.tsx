@@ -110,13 +110,22 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
 
                 <div className="bg-amber-50 dark:bg-stone-700/50 border border-amber-200 dark:border-stone-700 rounded-lg p-4 my-6">
                     <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-2">Order Summary</h3>
-                    <div className="space-y-1 text-sm text-stone-600 dark:text-stone-300">
+                    <div className="space-y-1 text-sm text-stone-600 dark:text-stone-300 mb-4">
                         {cartDetails.map(item => (
                             <div key={item.id} className="flex justify-between">
                                 <span>{item.name} x {item.quantity}</span>
                                 <span className="font-medium">₹{(parseFloat(item.price.replace('₹', '')) * item.quantity).toFixed(2)}</span>
                             </div>
                         ))}
+                    </div>
+                    <div className="border-t border-dashed border-amber-300 dark:border-stone-600 my-2"></div>
+                    <div className="space-y-1 text-sm text-stone-600 dark:text-stone-300 mb-2">
+                        <div><strong>Name:</strong> {customerDetails.name}</div>
+                        <div><strong>Phone:</strong> {customerDetails.phone}</div>
+                        <div><strong>Type:</strong> {customerDetails.type}</div>
+                        {customerDetails.type === 'Delivery' && customerDetails.address && (
+                            <div><strong>Address:</strong> {customerDetails.address}</div>
+                        )}
                     </div>
                     <div className="border-t border-dashed border-amber-300 dark:border-stone-600 my-2"></div>
                     <div className="flex justify-between font-bold text-stone-800 dark:text-stone-200">
