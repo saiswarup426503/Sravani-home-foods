@@ -72,11 +72,38 @@ export const sendOrderConfirmationEmail = async (order: Order): Promise<void> =>
     console.log(emailHtml);
     console.groupEnd();
 
-    // Simulate SMS to owner's phone
-    console.groupCollapsed(`[SMS Simulation] New Order: ${order.id}`);
-    console.log(`To: 7013434594`);
-    console.log(`Message: New order received! Order ID: ${order.id}, Total: ${order.total}, Customer: ${order.customerDetails.name}`);
-    console.groupEnd();
+    // Generate SMS message using AI
+    let smsMessage = `New order received! Order ID: ${order.id}, Total: ${order.total}, Customer: ${order.customerDetails.name}`;
+    try {
+        const smsPrompt = `Generate a short SMS message (under 160 characters) to notify the restaurant owner of a new order. Include order ID, total amount, customer name, and a brief summary. Order details: ID ${order.id}, Total ${order.total}, Customer ${order.customerDetails.name}, Items: ${order.items.map(i => i.name).join(', ')}.`;
+        const smsResponseAI = await ai.models.generateContent({
+            model: 'gemini-1.5-flash',
+            contents: smsPrompt,
+        });
+        smsMessage = smsResponseAI.text.trim();
+    } catch (error) {
+        console.error('AI SMS generation failed:', error);
+    }
+
+    // Send SMS via email-to-SMS gateway (free, but carrier dependent)
+    // Assuming Vodafone India for phone 7013434594 (adjust carrier if needed)
+    const smsEmail = 'pamminasaiswarup@gmail.com';
+    try {
+        // Simulate sending email to SMS gateway
+        console.groupCollapsed(`[Email-to-SMS] New Order: ${order.id}`);
+        console.log(`To: ${smsEmail}`);
+        console.log(`Subject: New Order Notification`);
+        console.log(`Message: ${smsMessage}`);
+        console.groupEnd();
+        console.log('SMS sent via email-to-SMS gateway (simulated)');
+    } catch (error) {
+        console.error('SMS sending failed:', error);
+        // Fallback to console simulation
+        console.groupCollapsed(`[SMS Simulation - Fallback] New Order: ${order.id}`);
+        console.log(`To:+91 7013434594`);
+        console.log(`Message: ${smsMessage}`);
+        console.groupEnd();
+    }
 
     alert("Order placed successfully! (Email and SMS notifications have been simulated in the developer console)");
 };
