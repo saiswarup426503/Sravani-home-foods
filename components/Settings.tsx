@@ -69,7 +69,8 @@ const Settings: React.FC<SettingsProps> = ({ settings, onSave }) => {
                             onChange={handleChange}
                             placeholder="your-name@oksbi"
                             required
-                            className="w-full p-3 border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 rounded-lg"
+                            readOnly
+                            className="w-full p-3 border border-stone-300 dark:border-stone-600 bg-stone-100 dark:bg-stone-800 rounded-lg cursor-not-allowed"
                         />
                         <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">This UPI ID will be used to generate payment links for customers.</p>
                     </div>

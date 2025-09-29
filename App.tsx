@@ -21,7 +21,7 @@ const initialSettings: RestaurantSettings = {
     address: "Market Road, Narsingi, Ranga Reddy",
     phone: "6309412453",
     openingHours: "06:00 AM - 10:00 AM",
-    upiId: "your-upi-id@oksbi",
+    upiId: "pamminasaiswarup-1@oksbi",
 };
 
 
@@ -89,7 +89,7 @@ const App: React.FC = () => {
         };
         setMenu(prevMenu => [newItem, ...prevMenu]);
     };
-    
+
     const handleUpdateItem = (updatedItem: MenuItem) => {
         setMenu(prevMenu => prevMenu.map(item => item.id === updatedItem.id ? updatedItem : item));
     };
@@ -97,10 +97,10 @@ const App: React.FC = () => {
     const handleDeleteItem = (itemId: string) => {
         setMenu(prevMenu => prevMenu.filter(item => item.id !== itemId));
     };
-    
+
     const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
-        setOrders(prevOrders => 
-            prevOrders.map(order => 
+        setOrders(prevOrders =>
+            prevOrders.map(order =>
                 order.id === orderId ? { ...order, status } : order
             )
         );
@@ -110,7 +110,7 @@ const App: React.FC = () => {
         setCart(prevCart => {
             const existingItem = prevCart.find(item => item.id === itemToAdd.id);
             if (existingItem) {
-                return prevCart.map(item => 
+                return prevCart.map(item =>
                     item.id === itemToAdd.id ? { ...item, quantity: item.quantity + 1 } : item
                 );
             }
@@ -128,7 +128,7 @@ const App: React.FC = () => {
         }
     };
 
-     const handleProceedToCheckout = () => {
+    const handleProceedToCheckout = () => {
         if (currentUser?.role === 'Guest') {
             setPostLoginAction(() => () => {
                 setIsCartOpen(false);
@@ -139,9 +139,9 @@ const App: React.FC = () => {
             setIsCartOpen(false);
             setIsCheckoutOpen(true);
         }
-     };
+    };
 
-     const handleInitiatePayment = (customerDetails: CustomerDetails, specialInstructions: string) => {
+    const handleInitiatePayment = (customerDetails: CustomerDetails, specialInstructions: string) => {
         if (cart.length === 0) return;
 
         const orderItems = cart.map(cartItem => {
@@ -154,8 +154,8 @@ const App: React.FC = () => {
         });
 
         const total = orderItems.reduce((acc, item) => {
-           const price = parseFloat(item.price.replace('₹', ''));
-           return acc + (price * item.quantity);
+            const price = parseFloat(item.price.replace('₹', ''));
+            return acc + (price * item.quantity);
         }, 0);
 
         const newPendingOrder: Omit<Order, 'id' | 'date' | 'status'> = {
@@ -164,7 +164,7 @@ const App: React.FC = () => {
             total: `₹${total.toFixed(2)}`,
             specialInstructions,
         };
-        
+
         setPendingOrder(newPendingOrder);
         setIsCheckoutOpen(false);
         setIsPaymentSelectionOpen(true);
@@ -182,10 +182,10 @@ const App: React.FC = () => {
                 date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
                 status: 'Pending',
             };
-            
+
             setOrders(prevOrders => [newOrder, ...prevOrders]);
             setCart([]);
-            
+
             try {
                 console.log("Generating email notification for the new order...");
                 sendOrderConfirmationEmail(newOrder);
@@ -199,7 +199,7 @@ const App: React.FC = () => {
 
         }, 3000);
     };
-    
+
     const handleCancelPayment = () => {
         setPendingOrder(null);
         setIsPaymentSelectionOpen(false);
@@ -248,7 +248,7 @@ const App: React.FC = () => {
                 user = newUser;
             }
         }
-        
+
         setCurrentUser(user);
         setIsLoginModalOpen(false); // Close the modal if it was open
 
@@ -276,36 +276,36 @@ const App: React.FC = () => {
     }
 
     const renderMainContent = () => {
-        switch(currentView) {
+        switch (currentView) {
             case 'customer':
-                return <CustomerMenu 
-                    menu={menu} 
+                return <CustomerMenu
+                    menu={menu}
                     onAddToCart={handleAddToCart}
-                    settings={settings} 
+                    settings={settings}
                 />;
             case 'manager':
-                return <ManageMenu 
+                return <ManageMenu
                     menu={menu}
                     onAddItem={handleAddItem}
                     onUpdateItem={handleUpdateItem}
                     onDeleteItem={handleDeleteItem}
                 />;
             case 'orders':
-                 return <OrderManagement orders={orders} onUpdateStatus={handleUpdateOrderStatus} />;
+                return <OrderManagement orders={orders} onUpdateStatus={handleUpdateOrderStatus} />;
             case 'settings':
                 return <Settings settings={settings} onSave={handleUpdateSettings} />;
             default:
-                 return <CustomerMenu menu={menu} onAddToCart={handleAddToCart} settings={settings} />;
+                return <CustomerMenu menu={menu} onAddToCart={handleAddToCart} settings={settings} />;
         }
     };
 
     return (
         <div className="flex min-h-screen bg-[#FEFBF6] dark:bg-stone-900">
-            <Sidebar 
+            <Sidebar
                 currentUser={currentUser}
-                currentView={currentView} 
+                currentView={currentView}
                 onSetView={setCurrentView}
-                onProfileClick={handleProfileClick} 
+                onProfileClick={handleProfileClick}
                 theme={theme}
                 onToggleTheme={handleToggleTheme}
             />
@@ -314,11 +314,11 @@ const App: React.FC = () => {
                     {renderMainContent()}
                 </main>
             </div>
-            
-             {currentView === 'customer' && (
+
+            {currentView === 'customer' && (
                 <button onClick={() => setIsCartOpen(true)} className="fixed bottom-8 right-8 bg-gradient-to-r from-orange-400 to-amber-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
                     {totalCartItems > 0 && (
-                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
                             {totalCartItems}
                         </span>
                     )}
@@ -326,7 +326,7 @@ const App: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </button>
-             )}
+            )}
 
             <PaymentSelectionModal
                 isOpen={isPaymentSelectionOpen}
@@ -355,7 +355,7 @@ const App: React.FC = () => {
                 onProceedToPay={handleInitiatePayment}
                 currentUser={currentUser}
             />
-            
+
             <UserSwitcherModal
                 isOpen={isUserSwitcherOpen}
                 onClose={() => setIsUserSwitcherOpen(false)}
