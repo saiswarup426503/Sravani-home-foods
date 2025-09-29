@@ -13,7 +13,7 @@ export default async (req, res) => {
             const { data: orders, error } = await supabase
                 .from('orders')
                 .select('*')
-                .order('date', { ascending: false });
+                .order('orderDate', { ascending: false });
 
             if (error) throw error;
             res.status(200).json(orders);
@@ -21,9 +21,23 @@ export default async (req, res) => {
             const { action, order, orderId, status } = req.body;
 
             if (action === 'add') {
+                // Map order object to match new table schema
+                const orderData = {
+                    id: order.id,
+                    fullName: order.fullName,
+                    phoneNumber: order.phoneNumber,
+                    emailAddress: order.emailAddress,
+                    orderType: order.orderType,
+                    specialInstructions: order.specialInstructions,
+                    items: order.items, // should be JSON array
+                    totalAmount: order.totalAmount,
+                    orderDate: order.orderDate || new Date().toISOString(),
+                    status: order.status || 'pending',
+                };
+
                 const { data, error } = await supabase
                     .from('orders')
-                    .insert([order])
+                    .insert([orderData])
                     .select();
 
                 if (error) throw error;
