@@ -34,6 +34,7 @@ const createEmailPrompt = (order: Order): string => {
         - Customer Phone: ${order.customerDetails.phone}
         - Customer Email: ${order.customerDetails.email || 'Not provided'}
         - Order Type: ${order.customerDetails.type}
+        - Delivery Address: ${order.customerDetails.address || 'Not provided'}
         - Special Instructions: ${order.specialInstructions || 'None'}
         - Total Amount: ${order.total}
         
@@ -70,7 +71,7 @@ export const sendOrderConfirmationEmail = async (order: Order): Promise<void> =>
         });
 
         const emailHtml = response.text;
-        
+
         console.groupCollapsed(`[Email Simulation] New Order: ${order.id}`);
         console.log(`From: system@sravanihomefoods.com`);
         console.log(`To: pamminasaiswarup@gmail.com`);
@@ -78,7 +79,7 @@ export const sendOrderConfirmationEmail = async (order: Order): Promise<void> =>
         console.log("--- Email Body (HTML) ---");
         console.log(emailHtml);
         console.groupEnd();
-        
+
         alert("Order placed successfully! (Email notification has been simulated in the developer console)");
 
     } catch (error) {

@@ -22,12 +22,12 @@ const CustomerMenu: React.FC<CustomerMenuProps> = ({ menu, settings, onAddToCart
         }, new Set<string>());
         return ['All Items', ...Array.from(categories)];
     }, [menu]);
-    
+
     const groupedMenu = useMemo(() => {
         if (!menu) return {};
         return menu.reduce((acc, item) => {
-            if(item.isAvailable) {
-              (acc[item.category] = acc[item.category] || []).push(item);
+            if (item.isAvailable) {
+                (acc[item.category] = acc[item.category] || []).push(item);
             }
             return acc;
         }, {} as Record<string, MenuItem[]>);
@@ -38,12 +38,22 @@ const CustomerMenu: React.FC<CustomerMenuProps> = ({ menu, settings, onAddToCart
 
     return (
         <div>
-            <Header 
+            <Header
                 name={settings.name}
                 address={settings.address}
                 phone={settings.phone}
                 openingHours={settings.openingHours}
             />
+
+            <div className="bg-amber-50 dark:bg-stone-700/50 border border-amber-200 dark:border-stone-700 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-2">Delivery Information</h3>
+                <p className="text-sm text-stone-600 dark:text-stone-300">
+                    We deliver to: <strong>{settings.address}</strong>
+                </p>
+                <p className="text-sm text-stone-600 dark:text-stone-300 mt-1">
+                    Please provide your delivery address during checkout for delivery orders.
+                </p>
+            </div>
 
             {availableItemsCount > 0 && menu ? (
                 <>
@@ -66,7 +76,7 @@ const CustomerMenu: React.FC<CustomerMenuProps> = ({ menu, settings, onAddToCart
                     </div>
                 </>
             ) : (
-                 <div className="text-center py-16 px-6 bg-stone-100 dark:bg-stone-800 rounded-lg mt-8">
+                <div className="text-center py-16 px-6 bg-stone-100 dark:bg-stone-800 rounded-lg mt-8">
                     <h3 className="text-2xl font-serif text-stone-700 dark:text-stone-300">Welcome to {settings.name}!</h3>
                     <p className="text-stone-500 dark:text-stone-400 mt-2 max-w-md mx-auto">The menu for today hasn't been set yet. Please check back soon!</p>
                 </div>
