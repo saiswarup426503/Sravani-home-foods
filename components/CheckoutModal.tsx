@@ -15,7 +15,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
         name: '',
         phone: '',
         email: '',
-        type: 'Dine In' as OrderType,
+        type: 'Delivery' as OrderType,
         address: '',
     });
     const [specialInstructions, setSpecialInstructions] = useState('');
@@ -27,7 +27,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                     name: currentUser.name,
                     phone: '', // Phone is kept separate as it might not be stored with the user profile
                     email: currentUser.email,
-                    type: 'Dine In',
+                    type: 'Delivery',
                     address: '',
                 });
             } else {
@@ -36,7 +36,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                     name: '',
                     phone: '',
                     email: '',
-                    type: 'Dine In' as OrderType,
+                    type: 'Delivery' as OrderType,
                     address: '',
                 });
             }
