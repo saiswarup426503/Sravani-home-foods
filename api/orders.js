@@ -16,7 +16,7 @@ const transformOrder = (order) => {
             type: order.orderType,
         },
         items: order.items,
-        total: order.totalAmount,
+        total: `₹${parseFloat(order.totalAmount).toFixed(2)}`,
         specialInstructions: order.specialInstructions || '',
         status: order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase(),
     };
@@ -50,7 +50,7 @@ export default async (req, res) => {
                     orderType: order.customerDetails.type,
                     specialInstructions: order.specialInstructions,
                     items: order.items, // should be JSON array
-                    totalAmount: order.total,
+                    totalAmount: parseFloat(order.total.replace('₹', '')),
                     orderDate: order.date || new Date().toISOString(),
                     status: order.status.toLowerCase() || 'pending',
                 };
