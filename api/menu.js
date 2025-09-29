@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+console.log('supabaseUrl:', supabaseUrl);
+console.log('supabaseServiceRoleKey:', supabaseServiceRoleKey ? 'set' : 'not set');
+
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 export default async (req, res) => {
@@ -53,7 +56,7 @@ export default async (req, res) => {
             res.status(405).json({ error: 'Method not allowed' });
         }
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('API Error:', error.message || error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
