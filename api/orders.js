@@ -14,6 +14,7 @@ const transformOrder = (order) => {
             phone: order.phoneNumber,
             email: order.emailAddress,
             type: order.orderType,
+            address: order.address || '',
         },
         items: order.items,
         total: `₹${parseFloat(order.totalAmount).toFixed(2)}`,
@@ -48,6 +49,7 @@ export default async (req, res) => {
                     phoneNumber: order.customerDetails.phone,
                     emailAddress: order.customerDetails.email,
                     orderType: order.customerDetails.type,
+                    address: order.customerDetails.address || '',
                     specialInstructions: order.specialInstructions,
                     items: order.items, // should be JSON array
                     totalAmount: parseFloat(order.total.replace('₹', '')),

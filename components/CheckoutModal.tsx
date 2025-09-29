@@ -11,11 +11,12 @@ interface CheckoutModalProps {
 }
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, menu, onProceedToPay, currentUser }) => {
-    const [customerDetails, setCustomerDetails] = useState<Omit<CustomerDetails, 'type'> & { type: OrderType }>({
+    const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
         name: '',
         phone: '',
         email: '',
         type: 'Dine In' as OrderType,
+        address: '',
     });
     const [specialInstructions, setSpecialInstructions] = useState('');
 
@@ -27,6 +28,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                     phone: '', // Phone is kept separate as it might not be stored with the user profile
                     email: currentUser.email,
                     type: 'Dine In',
+                    address: '',
                 });
             } else {
                 // Reset for Owner or guest user
@@ -35,6 +37,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                     phone: '',
                     email: '',
                     type: 'Dine In' as OrderType,
+                    address: '',
                 });
             }
             setSpecialInstructions('');
@@ -65,17 +68,21 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
             alert('Full Name and Phone Number are required.');
             return;
         }
+        if (customerDetails.type === 'Delivery' && !customerDetails.address) {
+            alert('Delivery Address is required for delivery orders.');
+            return;
+        }
         onProceedToPay(customerDetails, specialInstructions);
     };
 
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
             className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-80 flex justify-center items-center z-50 transition-opacity"
             onClick={onClose}
         >
-            <div 
+            <div
                 className="bg-[#FDFCF9] dark:bg-stone-800 rounded-xl shadow-2xl p-8 transform transition-all w-full max-w-lg mx-4 flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -95,6 +102,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                         <option value="Takeaway">Takeaway</option>
                         <option value="Delivery">Delivery</option>
                     </select>
+                    {customerDetails.type === 'Delivery' && (
+                        <input type="text" name="address" placeholder="Delivery Address *" value={customerDetails.address} onChange={handleChange} className="w-full p-3 bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 rounded-lg dark:placeholder-stone-400" />
+                    )}
                     <textarea placeholder="Special Instructions..." value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} rows={3} className="w-full p-3 bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 rounded-lg dark:placeholder-stone-400"></textarea>
                 </div>
 
@@ -115,7 +125,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cart, me
                     </div>
                 </div>
 
-                <button 
+                <button
                     onClick={handleSubmit}
                     className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-shadow"
                 >

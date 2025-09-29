@@ -18,10 +18,11 @@ export type OrderStatus = 'Pending' | 'Preparing' | 'Delivered' | 'Cancelled';
 export type OrderType = 'Dine In' | 'Takeaway' | 'Delivery';
 
 export interface CustomerDetails {
-    name: string;
-    phone: string;
-    email: string;
-    type: OrderType;
+  name: string;
+  phone: string;
+  email: string;
+  type: OrderType;
+  address?: string;
 }
 
 export interface Order {
@@ -48,9 +49,9 @@ export interface User {
 }
 
 export interface RestaurantSettings {
-    name: string;
-    address: string;
-    phone: string;
-    openingHours: string;
-    upiId: string;
+  name: string;
+  address: string;
+  phone: string;
+  openingHours: string;
+  upiId: string;
 }
