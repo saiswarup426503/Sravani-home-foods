@@ -2,11 +2,11 @@ import type { Order } from '../types';
 import { ai } from './geminiService';
 
 /**
- * Generates a prompt for the Gemini API to create an HTML email body.
+ * Generates a simple HTML email body for the order.
  * @param order - The order details.
- * @returns A string prompt.
+ * @returns A string HTML.
  */
-const createEmailPrompt = (order: Order): string => {
+const createEmailHtml = (order: Order): string => {
     const itemsListHtml = order.items
         .map(item => `
             <tr>
@@ -18,35 +18,35 @@ const createEmailPrompt = (order: Order): string => {
         .join('');
 
     return `
-        Subject: New Order Notification: ${order.id}
-
-        Generate a professional and clean HTML email body for a restaurant owner notifying them of a new order.
-        Do not include the subject line in the output, only the HTML body.
-        
-        The email should be styled with inline CSS for maximum compatibility. 
-        Use a warm, food-themed color palette (e.g., oranges, browns, creams).
-        The main content area should have a max-width of 600px and be centered.
-
-        Here are the order details to include:
-        - Order ID: ${order.id}
-        - Date: ${order.date}
-        - Customer Name: ${order.customerDetails.name}
-        - Customer Phone: ${order.customerDetails.phone}
-        - Customer Email: ${order.customerDetails.email || 'Not provided'}
-        - Order Type: ${order.customerDetails.type}
-        - Delivery Address: ${order.customerDetails.address || 'Not provided'}
-        - Special Instructions: ${order.specialInstructions || 'None'}
-        - Total Amount: ${order.total}
-        
-        The items ordered are:
-        ${itemsListHtml}
-        
-        The structure should be:
-        1. A welcoming header like "You've Received a New Order!".
-        2. A clear summary of the order details.
-        3. A table for the items list with columns: "Item", "Quantity", and "Price".
-        4. The total amount displayed prominently at the end.
-        5. A concluding sentence, for example, "Please start preparing the order at your earliest convenience."
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background-color: #fdfcf9; padding: 20px; border: 1px solid #ddd;">
+            <h1 style="color: #d2691e; text-align: center;">You've Received a New Order!</h1>
+            <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h2 style="color: #333;">Order Details</h2>
+                <p><strong>Order ID:</strong> ${order.id}</p>
+                <p><strong>Date:</strong> ${order.date}</p>
+                <p><strong>Customer Name:</strong> ${order.customerDetails.name}</p>
+                <p><strong>Customer Phone:</strong> ${order.customerDetails.phone}</p>
+                <p><strong>Customer Email:</strong> ${order.customerDetails.email || 'Not provided'}</p>
+                <p><strong>Order Type:</strong> ${order.customerDetails.type}</p>
+                ${order.customerDetails.type === 'Delivery' ? `<p><strong>Delivery Address:</strong> ${order.customerDetails.address || 'Not provided'}</p>` : ''}
+                <p><strong>Special Instructions:</strong> ${order.specialInstructions || 'None'}</p>
+                <h3 style="color: #333; margin-top: 20px;">Items Ordered</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f4f4f4;">
+                            <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Item</th>
+                            <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Quantity</th>
+                            <th style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsListHtml}
+                    </tbody>
+                </table>
+                <p style="font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; color: #d2691e;">Total Amount: ${order.total}</p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: #666;">Please start preparing the order at your earliest convenience.</p>
+        </div>
     `;
 };
 
@@ -62,33 +62,15 @@ const createEmailPrompt = (order: Order): string => {
 export const sendOrderConfirmationEmail = async (order: Order): Promise<void> => {
     console.log(`Preparing email for order ${order.id}...`);
 
-    const prompt = createEmailPrompt(order);
+    const emailHtml = createEmailHtml(order);
 
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
+    console.groupCollapsed(`[Email Simulation] New Order: ${order.id}`);
+    console.log(`From: pamminasujanasri@gmail.com`);
+    console.log(`To: pamminasaiswarup@gmail.com`);
+    console.log(`Subject: New Order Notification: ${order.id}`);
+    console.log("--- Email Body (HTML) ---");
+    console.log(emailHtml);
+    console.groupEnd();
 
-        const emailHtml = response.text;
-
-        console.groupCollapsed(`[Email Simulation] New Order: ${order.id}`);
-        console.log(`From: system@sravanihomefoods.com`);
-        console.log(`To: pamminasaiswarup@gmail.com`);
-        console.log(`Subject: New Order Notification: ${order.id}`);
-        console.log("--- Email Body (HTML) ---");
-        console.log(emailHtml);
-        console.groupEnd();
-
-        alert("Order placed successfully! (Email notification has been simulated in the developer console)");
-
-    } catch (error) {
-        console.error("Gemini API error while generating email:", error);
-        // Fallback to a plain text log if Gemini fails
-        console.groupCollapsed(`[Email Simulation - FALLBACK] New Order: ${order.id}`);
-        console.log("The AI email generator failed. Here are the raw order details:");
-        console.log(JSON.stringify(order, null, 2));
-        console.groupEnd();
-        alert("Order placed successfully! (AI email generation failed, check console for details)");
-    }
+    alert("Order placed successfully! (Email notification has been simulated in the developer console)");
 };
