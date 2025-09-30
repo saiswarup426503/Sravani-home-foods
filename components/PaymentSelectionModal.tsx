@@ -19,8 +19,6 @@ const PaymentSelectionModal: React.FC<PaymentSelectionModalProps> = ({ isOpen, o
     const [upiLink, setUpiLink] = useState('');
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [redirectingApp, setRedirectingApp] = useState<string | null>(null);
-    const [showTransactionInput, setShowTransactionInput] = useState(false);
-    const [transactionId, setTransactionId] = useState('');
 
     useEffect(() => {
         if (isOpen && totalAmount && upiId) {
@@ -36,8 +34,6 @@ const PaymentSelectionModal: React.FC<PaymentSelectionModalProps> = ({ isOpen, o
         } else if (!isOpen) {
             // Reset state when modal closes
             setRedirectingApp(null);
-            setShowTransactionInput(false);
-            setTransactionId('');
         }
     }, [isOpen, totalAmount, upiId, restaurantName]);
 
@@ -116,31 +112,15 @@ const PaymentSelectionModal: React.FC<PaymentSelectionModalProps> = ({ isOpen, o
 
                 <div className="mt-8">
                     <p className="text-center text-xs text-stone-500 dark:text-stone-400 mb-3">After paying, confirm below to place your order.</p>
-                    {!showTransactionInput ? (
-                        <button
-                            onClick={() => setShowTransactionInput(true)}
-                            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-shadow"
-                        >
-                            I've Paid, Enter Transaction ID
-                        </button>
-                    ) : (
-                        <div>
-                            <input
-                                type="text"
-                                placeholder="Enter Transaction ID"
-                                value={transactionId}
-                                onChange={(e) => setTransactionId(e.target.value)}
-                                className="w-full p-3 bg-white dark:bg-stone-700 border border-stone-200 dark:border-stone-600 rounded-lg dark:placeholder-stone-400 mb-3"
-                            />
-                            <button
-                                onClick={() => onConfirmPayment(transactionId)}
-                                disabled={!transactionId.trim()}
-                                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Confirm Transaction & Place Order
-                            </button>
-                        </div>
-                    )}
+                    <button
+                        onClick={() => {
+                            const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+                            onConfirmPayment(transactionId);
+                        }}
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-shadow"
+                    >
+                        I've Paid, Verify & Place Order
+                    </button>
                     <button
                         onClick={onClose}
                         className="mt-3 w-full text-stone-600 dark:text-stone-400 font-semibold py-2"
