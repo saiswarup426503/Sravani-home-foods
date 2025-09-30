@@ -11,6 +11,7 @@ import { sendOrderConfirmationEmail } from './services/emailService';
 import UserSwitcherModal from './components/UserSwitcherModal';
 import Settings from './components/Settings';
 import PaymentSelectionModal from './components/PaymentSelectionModal';
+import OrderConfirmationModal from './components/OrderConfirmationModal';
 import LoginModal from './components/LoginModal';
 import LoginPage from './components/LoginPage';
 
@@ -67,6 +68,8 @@ const App: React.FC = () => {
     const [theme, setTheme] = useState(getInitialTheme);
     const [isMenuLoading, setIsMenuLoading] = useState(true);
     const [isOrdersLoading, setIsOrdersLoading] = useState(true);
+    const [isOrderConfirmationOpen, setIsOrderConfirmationOpen] = useState<boolean>(false);
+    const [confirmedTransactionId, setConfirmedTransactionId] = useState<string>('');
 
     useLayoutEffect(() => {
         const root = window.document.documentElement;
@@ -364,7 +367,7 @@ const App: React.FC = () => {
         setIsPaymentSelectionOpen(true);
     };
 
-    const handleVerifyAndPlaceOrder = () => {
+    const handleVerifyAndPlaceOrder = (transactionId: string) => {
         if (!pendingOrder) return;
 
         setIsVerifyingPayment(true);
@@ -372,7 +375,7 @@ const App: React.FC = () => {
         setTimeout(() => {
             const newOrder: Order = {
                 ...pendingOrder,
-                id: `#${Math.random().toString(16).substr(2, 8)}`,
+                id: transactionId,
                 date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
                 status: 'Pending',
             };
@@ -390,6 +393,8 @@ const App: React.FC = () => {
             setPendingOrder(null);
             setIsVerifyingPayment(false);
             setIsPaymentSelectionOpen(false);
+            setConfirmedTransactionId(transactionId);
+            setIsOrderConfirmationOpen(true);
 
         }, 3000);
     };
@@ -563,6 +568,12 @@ const App: React.FC = () => {
                 isOpen={isLoginModalOpen}
                 onClose={() => setIsLoginModalOpen(false)}
                 onLogin={handleLogin}
+            />
+
+            <OrderConfirmationModal
+                isOpen={isOrderConfirmationOpen}
+                onClose={() => setIsOrderConfirmationOpen(false)}
+                transactionId={confirmedTransactionId}
             />
         </div>
     );
